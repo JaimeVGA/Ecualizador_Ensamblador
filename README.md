@@ -1,42 +1,85 @@
-# Ecualizador Ensamblador
+# Ecualizador En Ensamblador (x86-64)
 
-Proyecto de prueba para procesar audio en ensamblador x86-64 y validarlo desde C.
+Proyecto de pruebas para procesamiento de audio con NASM y validacion desde C usando `dr_wav`.
 
-## Estructura
+## Estructura del proyecto
 
-- `Modulos Ensamblador/`: código NASM del procesamiento de audio.
-- `Librerias/Interfaces/`: interfaz C de referencia con lectura y escritura de WAV.
-- `Pruebas/`: archivos de prueba, binarios generados y la interfaz que se está usando para validar el módulo.
-- `Audios Prueba/`: audios de entrada y salida para las pruebas.
-
-## Módulos disponibles
-
-- `procesar_volumen`: aplica una ganancia a una secuencia de muestras `float`.
-- `procesar_ecualizador`: procesa audio estéreo con una configuración de bandas tipo biquad.
-
-## Compilación
-
-Para ensamblar y enlazar el módulo de prueba:
-
-```bash
-nasm -f elf64 -g -F dwarf Pruebas/CambioVolumen.asm -o Pruebas/CambioVolumen.o
-gcc -Wall -Wextra -std=c11 Pruebas/Interfaz.c Pruebas/CambioVolumen.o -o Pruebas/a.out
+```text
+.
+├── assets/
+│   └── audio/
+│       ├── entrada.wav
+│       └── entrada_prueba.wav
+├── build/
+├── include/
+│   ├── dr_mp3.h
+│   └── dr_wav.h
+├── src/
+│   ├── asm/
+│   │   ├── cambio_volumen.asm
+│   │   └── procesar_ecualizador.asm
+│   └── c/
+│       ├── interfaz_ecualizador.c
+│       └── interfaz_referencia.c
+└── README.md
 ```
 
-Si quieres ejecutar la interfaz de prueba por teclado, compila el archivo correspondiente en `Pruebas/` y enlázalo con el objeto ASM.
+## Que hace cada modulo
 
-## Ejecución
+- `procesar_volumen`: aplica una ganancia a muestras `float`.
+- `procesar_ecualizador`: aplica ecualizacion de 3 bandas sobre audio estereo.
 
-La interfaz de referencia carga un WAV de entrada, llama al módulo en ensamblador y guarda un WAV de salida.
+## Requisitos
 
-Ejemplo de uso:
+- Linux x86-64
+- `nasm`
+- `gcc`
+
+## Compilacion (tu flujo NASM + GCC)
+
+Desde la raiz del proyecto, este es el flujo recomendado y compatible con tu forma de trabajo:
 
 ```bash
-cd Pruebas
-./a.out
+mkdir -p build
+nasm -f elf64 src/asm/procesar_ecualizador.asm -o build/objeto.o
+gcc src/c/interfaz_ecualizador.c build/objeto.o -Iinclude -lm -o build/ecualizador
+```
+
+Si antes usabas nombres antiguos, esta es la equivalencia:
+
+- `procesarEcualizador.asm` -> `src/asm/procesar_ecualizador.asm`
+- `Interfaz.c` -> `src/c/interfaz_ecualizador.c`
+
+Compilacion con flags extra (opcional):
+
+```bash
+nasm -f elf64 -g -F dwarf src/asm/procesar_ecualizador.asm -o build/objeto.o
+gcc -Wall -Wextra -std=c11 -Iinclude src/c/interfaz_ecualizador.c build/objeto.o -lm -o build/ecualizador
+```
+
+## Ejecucion
+
+```bash
+./build/ecualizador
+```
+
+Entrada esperada:
+
+- `assets/audio/entrada_prueba.wav`
+
+Salida generada:
+
+- `assets/audio/salida_ecualizador.wav`
+
+## Variante de referencia
+
+Si deseas compilar la interfaz de referencia:
+
+```bash
+gcc -Wall -Wextra -std=c11 -Iinclude src/c/interfaz_referencia.c -o build/interfaz_referencia
 ```
 
 ## Notas
 
-- Los archivos generados, como `.o` y binarios, no deberían versionarse.
-- Si cambias la firma de una rutina ASM, actualiza también la declaración `extern` en la interfaz C.
+- Los binarios y objetos deben quedar en `build/`.
+- Si cambias la firma de una rutina ASM, actualiza el `extern` correspondiente en C.

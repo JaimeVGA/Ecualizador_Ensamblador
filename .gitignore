@@ -1,0 +1,14 @@
+# Build outputs
+build/
+*.o
+*.out
+
+# Debug symbols and generated binaries
+*.dSYM/
+
+# Generated audio outputs
+assets/audio/salida*.wav
+Pruebas/salida*.wav
+
+# Editor
+.vscode/*.log

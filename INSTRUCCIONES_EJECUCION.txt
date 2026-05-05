@@ -1,0 +1,394 @@
+================================================================================
+                    ECUALIZADOR EN ENSAMBLADOR x86-64
+                   INSTRUCCIONES COMPLETAS DE EJECUCIÓN
+================================================================================
+
+DESCRIPCIÓN DEL PROYECTO
+========================
+
+Este proyecto implementa un ecualizador de audio de 3 bandas (bajos, medios, 
+agudos) con dos opciones de procesamiento:
+
+  1. MODO C: Implementación en C puro (referencia confiable)
+  2. MODO ASM: Implementación optimizada en x86-64 assembly con SIMD
+
+El ecualizador procesa archivos WAV estéreo y permite ajustar la ganancia 
+en dB de cada banda de frecuencia (rango: -20dB a +20dB).
+
+
+REQUISITOS DEL SISTEMA
+======================
+
+  • SO: Linux x86-64 (probado en Ubuntu 22.04+)
+  • Procesador: Intel/AMD con soporte SSE4 (casi todos modernos)
+  • Python: 3.12 o superior
+  • Compiladores:
+      - NASM (assembler x86-64)
+      - GCC (compilador C)
+  • Librerías: gcc, make, python3-dev (opcional)
+
+
+INSTALACIÓN DE DEPENDENCIAS
+============================
+
+En Ubuntu/Debian:
+
+    sudo apt-get update
+    sudo apt-get install python3 python3-pip python3-tk nasm gcc
+
+Opcionalmente (para desarrollo):
+
+    sudo apt-get install build-essential python3-dev
+
+
+ESTRUCTURA DEL PROYECTO
+=======================
+
+Pruebas/
+├── app.py                      # Interfaz gráfica Python (customtkinter)
+├── Ecualizador.asm            # Código ASM optimizado con SIMD
+├── InterfazDual.c             # Interfaz C con ambos modos
+├── dr_wav.h                   # Librería de I/O de WAV (header-only)
+├── libecualizador.so          # Librería compartida compilada
+├── dist/
+│   └── EcualizadorASM         # Ejecutable empaquetado (PyInstaller)
+├── ecualizador/               # Entorno virtual Python
+│   ├── bin/python
+│   └── lib/python3.12/
+└── [archivos de audio WAV]
+
+
+PASO 1: PREPARACIÓN DEL ENTORNO
+================================
+
+1a) Navega a la carpeta del proyecto:
+
+    cd ~/Documentos/Ecualizador_Ensamblador/Pruebas
+
+1b) El entorno virtual Python ya está creado (ecualizador/). Si es nuevo:
+
+    python3 -m venv ecualizador
+    source ecualizador/bin/activate
+    pip install --upgrade pip
+    pip install customtkinter
+
+
+PASO 2: COMPILACIÓN (SOLO SI EDITAS CÓDIGO)
+=============================================
+
+Si modificas Ecualizador.asm o InterfazDual.c, recompila la librería:
+
+    nasm -f elf64 Ecualizador.asm -o Ecualizador.o
+    gcc -fPIC -c InterfazDual.c -o InterfazDual.o
+    gcc -shared -o libecualizador.so Ecualizador.o InterfazDual.o -lm
+
+O ejecuta el script en una línea:
+
+    nasm -f elf64 Ecualizador.asm -o Ecualizador.o && \
+    gcc -fPIC -c InterfazDual.c -o InterfazDual.o && \
+    gcc -shared -o libecualizador.so Ecualizador.o InterfazDual.o -lm
+
+Confirma que libecualizador.so se creó:
+
+    ls -lh libecualizador.so
+
+
+PASO 3: EJECUCIÓN - OPCIÓN A: INTERFAZ GRÁFICA (RECOMENDADO)
+==============================================================
+
+3a) Activa el entorno virtual:
+
+    source ecualizador/bin/activate
+
+3b) Ejecuta la aplicación:
+
+    ecualizador/bin/python app.py
+
+    O más simplemente (si ya estás en el dir):
+
+    python3 app.py
+
+3c) Interfaz gráfica:
+
+    • Pantalla inicial: Selector de archivo de audio WAV
+    • Controles:
+        - Tres sliders: Bajos (100Hz), Medios (1kHz), Agudos (5kHz)
+        - Rango: -20dB (reduce) a +20dB (amplifica)
+        - Botones de modo: "Usar C" o "Usar ASM"
+        - Estado actual se muestra debajo de los botones
+    • Para procesar:
+        1. Selecciona archivo WAV (clic en área gris superior)
+        2. Ajusta sliders según desees
+        3. Elige modo (C o ASM)
+        4. Clic botón "GUARDAR"
+    • Salida: {NombreCanción}_{Modo}.wav
+
+    Modos de salida:
+        - Modo C  → CancionName_C.wav
+        - Modo ASM → CancionName_Asm.wav
+        - Si existe versión anterior: agrega sufijo v2, v3, etc.
+
+3d) Para cerrar: Clic botón X o Alt+F4
+
+
+PASO 4: EJECUCIÓN - OPCIÓN B: EJECUTABLE EMPAQUETADO
+=====================================================
+
+Si ya fue empaquetado con PyInstaller:
+
+4a) Navega a la carpeta dist:
+
+    cd dist
+
+4b) Ejecuta el binario:
+
+    ./EcualizadorASM
+
+4c) La interfaz es idéntica a la versión Python, pero todo está 
+    autocontenido (no necesita Python instalado en el sistema).
+
+
+PASO 5: EMPAQUETAMIENTO CON PYINSTALLER (OPCIONAL)
+===================================================
+
+Si quieres crear un ejecutable standalone:
+
+5a) Asegúrate de tener libecualizador.so compilado y actualizado en Pruebas/
+
+5b) Desde la carpeta Pruebas, ejecuta:
+
+    rm -rf dist build
+    ecualizador/bin/python -m PyInstaller --onefile \
+        --name EcualizadorASM \
+        --add-binary "libecualizador.so:." \
+        --collect-all customtkinter \
+        app.py
+
+5c) Espera a que termine (toma 1-2 minutos). El ejecutable estará en:
+
+    ./dist/EcualizadorASM
+
+5d) Copia el ejecutable a cualquier máquina Linux x86-64 y ejecuta:
+
+    ./EcualizadorASM
+
+
+PASO 6: COMPARACIÓN DE MODOS (ANÁLISIS)
+========================================
+
+Para verificar que ambos modos funcionan correctamente:
+
+6a) Carga un archivo de audio
+
+6b) Ajusta controles de la misma forma en ambos modos:
+    - Ejemplo: Bajos -20dB, Medios 0dB, Agudos 0dB
+
+6c) Genera archivo en modo C:
+    - Clic "Usar C"
+    - Clic "GUARDAR"
+    - Escucha: CancionName_C.wav
+
+6d) Genera archivo en modo ASM con mismos ajustes:
+    - Clic "Usar ASM"
+    - (Los sliders mantienen valores previos)
+    - Clic "GUARDAR"
+    - Escucha: CancionName_Asm.wav
+
+6e) Comparación:
+    - Ambos archivos deben sonar IDÉNTICOS
+    - Prueba con audición atenta o analizador de espectro
+    - Si suenan igual: ¡Todo está correcto!
+    - Si suenan diferentes: Reporta el defecto
+
+
+PASO 7: DEPURACIÓN (SI ALGO NO FUNCIONA)
+=========================================
+
+Problema: "No encuentra libecualizador.so"
+
+    Solución:
+    1. Verifica que exista: ls -l libecualizador.so
+    2. Recompila si no existe (ver PASO 2)
+    3. Asegúrate de estar en carpeta Pruebas/
+
+Problema: "ModuleNotFoundError: No module named 'customtkinter'"
+
+    Solución:
+    1. Activa entorno: source ecualizador/bin/activate
+    2. Instala paquete: pip install customtkinter
+    3. Vuelve a ejecutar: python3 app.py
+
+Problema: "AttributeError: no function for ctypes interface"
+
+    Solución:
+    1. libecualizador.so no fue compilado correctamente
+    2. Recompila (PASO 2)
+    3. Verifica símbolos: nm libecualizador.so | grep procesar
+    4. Debe mostrar: procesar_ecualizador_ASM y Procesar_Ecualizador_C
+
+Problema: "Audio suena con distorsión en ASM"
+
+    Solución:
+    1. Verifica que procesar_ecualizador_ASM usa cascada correcta
+    2. Revisa el archivo Ecualizador.asm (línea ~56):
+       "movups xmm0, xmm10" debe estar DENTRO del bucle de bandas
+    3. Recompila: ver PASO 2
+
+Problema: El ejecutable "EcualizadorASM" no inicia
+
+    Solución:
+    1. Dale permisos: chmod +x dist/EcualizadorASM
+    2. Ejecuta desde terminal: ./dist/EcualizadorASM
+    3. Si error "cannot open shared object": 
+       - Copia libecualizador.so a misma carpeta
+       - O exporta: export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
+
+
+DETALLES TÉCNICOS DEL ALGORITMO
+===============================
+
+Cada muestra de audio pasa por 3 filtros en CASCADA:
+
+    Entrada Audio (L, R)
+          ↓
+    ┌─────────────────┐
+    │ Filtro BAJOS    │  (100 Hz, Q=0.707)
+    │ Biquad Peaking  │
+    └─────────────────┘
+          ↓
+    ┌─────────────────┐
+    │ Filtro MEDIOS   │  (1 kHz, Q=0.707)
+    │ Biquad Peaking  │
+    └─────────────────┘
+          ↓
+    ┌─────────────────┐
+    │ Filtro AGUDOS   │  (5 kHz, Q=0.707)
+    │ Biquad Peaking  │
+    └─────────────────┘
+          ↓
+    Salida Audio (L, R)
+
+Fórmula Biquad (tiempo discreto):
+
+    y[n] = b0*x[n] + b1*x[n-1] + b2*x[n-2] - a1*y[n-1] - a2*y[n-2]
+
+Dónde:
+    • b0, b1, b2: Coeficientes numerador
+    • a1, a2: Coeficientes denominador
+    • x[n]: Entrada actual
+    • x[n-1], x[n-2]: Entradas previas
+    • y[n]: Salida
+    • y[n-1], y[n-2]: Salidas previas
+
+Optimización ASM:
+
+    • Usa registros SSE4 (xmm0-xmm15) para procesamiento paralelo
+    • Procesa ambos canales (L, R) simultáneamente como vectores
+    • Mantiene estado por canal, por banda (x1, x2, y1, y2)
+    • Evita decodificación de punto flotante
+
+
+COMANDOS ÚTILES PARA DESARROLLO
+=================================
+
+Ver símbolos exportados:
+
+    nm libecualizador.so | grep -i procesar
+
+Validar sintaxis ASM:
+
+    nasm -f elf64 Ecualizador.asm -o /dev/null
+
+Compilar solo C:
+
+    gcc -fPIC -c InterfazDual.c -o InterfazDual.o
+
+Ver información del WAV procesado:
+
+    python3 -c "import wave; w=wave.open('CancionName_C.wav'); \
+      print(f'Channels: {w.getnchannels()}, Rate: {w.getframerate()} Hz, \
+      Samples: {w.getnframes()}')"
+
+Grabar archivo de prueba:
+
+    # Crea un tono de 440 Hz (La) en mono de 5 segundos
+    python3 << 'EOF'
+    import wave, math
+    sr = 44100
+    freq = 440
+    duration = 5
+    samples = int(sr * duration)
+    
+    with wave.open('test_tone.wav', 'wb') as w:
+        w.setnchannels(2)  # Estéreo
+        w.setsampwidth(2)  # 16-bit
+        w.setframerate(sr)
+        for i in range(samples):
+            val = int(32767 * 0.3 * math.sin(2 * math.pi * freq * i / sr))
+            w.writeframes(val.to_bytes(2, 'little', signed=True) * 2)  # L y R
+    print("test_tone.wav creado")
+    EOF
+
+
+SOPORTE Y REPORTES DE ERRORES
+=============================
+
+Si encuentras un problema:
+
+1. Revisa esta sección: "PASO 7: DEPURACIÓN"
+
+2. Verifica logs de compilación (si recompilaste):
+
+    nasm -f elf64 Ecualizador.asm -l Ecualizador.lst
+
+3. Si es error de Python:
+
+    python3 -m pdb app.py
+
+4. Si el audio es incorrecto, genera debug info:
+
+    • Carga mismo archivo WAV en modo C y ASM
+    • Compara con herramienta: Audacity, Sonic Visualiser, etc.
+    • Verifica que ganancias de dB se aplicaron correctamente
+
+
+RESUMEN RÁPIDO
+==============
+
+Flujo completo en comandos:
+
+    # 1. Navega
+    cd ~/Documentos/Ecualizador_Ensamblador/Pruebas
+    
+    # 2. Si compilaste código:
+    nasm -f elf64 Ecualizador.asm -o Ecualizador.o && \
+    gcc -fPIC -c InterfazDual.c -o InterfazDual.o && \
+    gcc -shared -o libecualizador.so Ecualizador.o InterfazDual.o -lm
+    
+    # 3. Ejecuta interfaz:
+    source ecualizador/bin/activate
+    python3 app.py
+    
+    # 4. (Opcional) Empaquetar:
+    rm -rf dist build
+    ecualizador/bin/python -m PyInstaller --onefile \
+        --name EcualizadorASM \
+        --add-binary "libecualizador.so:." \
+        --collect-all customtkinter app.py
+    
+    # 5. Usar ejecutable:
+    ./dist/EcualizadorASM
+
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
+
+Última actualización: 5 de mayo de 2026
+Versión del proyecto: 2.0 (ASM + C dual-mode)
+
+Para más información sobre los algoritmos DSP, consulta los comentarios en:
+  - InterfazDual.c (calcular_biquad, procesar_ecualizador_C)
+  - Ecualizador.asm (procesar_ecualizador_ASM)
+
+================================================================================

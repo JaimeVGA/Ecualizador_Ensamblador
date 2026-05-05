@@ -275,20 +275,6 @@ nm libecualizador.so | grep procesar
 3. Recompila
 4. Prueba nuevamente
 
-### "Ejecutable no inicia"
-
-```bash
-# Dale permisos
-chmod +x dist/EcualizadorASM
-
-# Ejecuta desde terminal
-./dist/EcualizadorASM
-
-# Si error "cannot open shared object"
-export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
-./dist/EcualizadorASM
-```
-
 ---
 
 ## 📦 Empaquetamiento con PyInstaller
@@ -309,69 +295,6 @@ ecualizador/bin/python -m PyInstaller --onefile \
 - Tamaño: ~13MB
 - No requiere Python instalado
 - Compatible con cualquier Linux x86-64
-
----
-
-## ✅ Comparación de Modos
-
-Para verificar que ambos modos funcionan correctamente:
-
-1. Carga mismo archivo WAV
-2. Ajusta sliders de forma idéntica en ambos modos
-3. Genera salida en modo C: `CancionName_C.wav`
-4. Genera salida en modo ASM con mismos ajustes: `CancionName_Asm.wav`
-5. Compara audio (escucha o analiza con Audacity)
-6. **Ambos deben sonar IDÉNTICOS**
-
----
-
-## 📚 Comandos Útiles
-
-### Ver símbolos exportados
-
-```bash
-nm libecualizador.so | grep -i procesar
-```
-
-### Validar sintaxis ASM
-
-```bash
-nasm -f elf64 Ecualizador.asm -o /dev/null
-```
-
-### Información de archivo WAV
-
-```bash
-python3 << 'EOF'
-import wave
-w = wave.open('archivo.wav')
-print(f"Canales: {w.getnchannels()}")
-print(f"Frecuencia: {w.getframerate()} Hz")
-print(f"Muestras: {w.getnframes()}")
-print(f"Duración: {w.getnframes() / w.getframerate():.2f} segundos")
-EOF
-```
-
-### Crear tono de prueba
-
-```bash
-python3 << 'EOF'
-import wave, math
-sr = 44100
-freq = 440  # La (A4)
-duration = 5
-
-with wave.open('test_tone.wav', 'wb') as w:
-    w.setnchannels(2)
-    w.setsampwidth(2)
-    w.setframerate(sr)
-    for i in range(int(sr * duration)):
-        val = int(32767 * 0.3 * math.sin(2 * math.pi * freq * i / sr))
-        w.writeframes(val.to_bytes(2, 'little', signed=True) * 2)
-print("test_tone.wav creado")
-EOF
-```
-
 ---
 
 ## 🎓 Detalles Técnicos Adicionales
@@ -399,24 +322,6 @@ a0, a1, a2, b0, b1, b2 - coeficientes normalizados
 
 ---
 
-## 📖 Documentación Completa
-
-Para instrucciones aún más detalladas, consulta:
-
-📄 **[INSTRUCCIONES_EJECUCION.txt](INSTRUCCIONES_EJECUCION.txt)** - Guía paso a paso con 7 secciones completas
-
----
-
-## 🤝 Soporte
-
-Si encuentras problemas:
-
-1. Lee la sección "🐛 Solución de Problemas"
-2. Verifica que cumplas con Requisitos del Sistema
-3. Consulta INSTRUCCIONES_EJECUCION.txt para pasos detallados
-4. Recompila (sección Compilación Detallada)
-
----
 
 ## 📝 Licencia
 

@@ -1,0 +1,63 @@
+================================================================================
+                    ECUALIZADOR EN ENSAMBLADOR x86-64
+                   INSTRUCCIONES COMPLETAS DE EJECUCIÓN
+================================================================================
+
+DESCRIPCIÓN DEL PROYECTO
+========================
+
+Este proyecto implementa un ecualizador de audio de 3 bandas (bajos, medios, 
+agudos) con dos opciones de procesamiento:
+
+  1. MODO C: Implementación en C puro 
+  2. MODO ASM: Implementación optimizada en x86-64 ensamblador, utilizando SIMD
+
+INSTRUCCIONES MÍNIMAS DE EJECUCIÓN
+
+1) Compilar el ensamblador (NASM)
+
+Desde la raíz del proyecto (donde está `Ecualizador.asm`):
+
+```bash
+nasm -f elf64 Ecualizador.asm -o Ecualizador.o
+```
+
+2) Compilar C y crear la librería compartida
+
+```bash
+gcc -fPIC -c Interfaz.c -o Interfaz.o
+gcc -shared -o libecualizador.so Ecualizador.o Interfaz.o -lm
+```
+
+3) Crear y activar un entorno virtual de Python
+
+```bash
+python3 -m venv ecualizador
+source ecualizador/bin/activate
+pip install --upgrade pip
+```
+
+4) Instalar dependencias Python mínimas
+
+```bash
+pip install customtkinter pyinstaller
+```
+
+5) Ejecutar la aplicación en desarrollo
+
+```bash
+python app.py
+```
+
+6) Empaquetar con PyInstaller (opcional)
+Si deseas crear un ejecutable independiente, usa el siguiente comando:
+
+```bash
+python -m PyInstaller --onefile --name EcualizadorASM \
+  --add-binary "libecualizador.so:." \
+  --collect-all customtkinter app.py
+```
+
+Notas:
+- Ejecuta los comandos desde la carpeta del proyecto donde están `Ecualizador.asm`, `Interfaz.c` y `app.py`.
+

@@ -78,7 +78,7 @@ procesar_ecualizador:
     dec rcx
     jnz .bucle_bandas
 
-    movlps [rdi], xmm11         ; Guardar resultado en buffer de audio
+    movq [rdi], xmm11         ; Guardar resultado en buffer de audio
     add rdi, 8                  ; Siguiente par estéreo
     dec rsi
     jnz .bucle_principal

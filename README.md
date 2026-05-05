@@ -1,37 +1,49 @@
-# Ecualizador de Audio en Ensamblador x86_64
+# Ecualizador De Audio ASM x86_64
 
-Proyecto de procesamiento de audio hecho con:
-- Ensamblador x86_64 con NASM
-- C como capa de control y procesamiento de archivo WAV
-- Python con CustomTkinter para la interfaz gráfica
+Proyecto de ecualización de audio WAV desarrollado con tres capas:
 
-La aplicación carga un archivo WAV, aplica el ecualizador de 3 bandas implementado en ensamblador y guarda el resultado como un nuevo archivo de salida.
+1. Ensamblador x86_64 (NASM) para el procesamiento de muestras.
+2. C como puente para cargar y guardar audio usando dr_wav.
+3. Python (CustomTkinter) para la interfaz gráfica.
 
-## Archivos principales en la raíz
+La aplicación permite seleccionar un archivo WAV, ajustar ganancias de bajos, medios y agudos, y generar un archivo de salida procesado.
 
-- `app.py`: interfaz gráfica en Python
-- `dr_wav.h`: biblioteca de lectura/escritura WAV
-- `Ecualizador.asm`: rutina principal en ensamblador
-- `Interfaz.c`: puente en C entre Python y ensamblador
-- `libecualizador.so`: biblioteca compartida que usa la interfaz Python
+## Objetivo Del Proyecto
+
+- Implementar un ecualizador de 3 bandas en bajo nivel.
+- Integrar ASM + C + Python en una sola aplicación usable.
+- Mantener una carpeta de trabajo independiente llamada Pruebas.
+
+## Estructura Actual
+
+```text
+.
+├── app.py
+├── Ecualizador.asm
+├── Interfaz.c
+├── dr_wav.h
+├── libecualizador.so
+├── README.md
+└── Pruebas/
+    └── archivos de desarrollo y pruebas locales
+```
 
 ## Requisitos
 
 - Linux x86_64
-- `nasm`
-- `gcc`
-- `python3`
-- `customtkinter`
+- Python 3
+- NASM
+- GCC
 
-Instalación de dependencia Python:
+Dependencia Python de interfaz:
 
 ```bash
 pip install customtkinter
 ```
 
-## Compilación
+## Compilación De La Librería
 
-Desde la raíz del proyecto:
+Ejecutar desde la raíz del proyecto:
 
 ```bash
 nasm -f elf64 -g -F dwarf Ecualizador.asm -o Ecualizador.o
@@ -39,35 +51,41 @@ gcc -fPIC -c Interfaz.c -o Interfaz.o
 gcc -shared -o libecualizador.so Ecualizador.o Interfaz.o -lm
 ```
 
-Si quieres probar la ejecución de la interfaz gráfica directamente:
+Resultado esperado:
+
+- Se genera o actualiza libecualizador.so en la raíz.
+
+## Ejecución De La Interfaz
 
 ```bash
 python3 app.py
 ```
 
-## Cómo funciona
+Flujo de uso:
 
-1. `app.py` abre una ventana con controles para cargar un archivo WAV.
-2. La interfaz llama a `libecualizador.so` con `ctypes`.
-3. La librería en C carga el audio con `dr_wav.h`.
-4. El archivo se procesa en ensamblador mediante `Ecualizador.asm`.
-5. El resultado se guarda como `salida_eq.wav` en la carpeta del ejecutable o del script.
+1. Cargar archivo WAV de entrada.
+2. Ajustar sliders de LOW, MID y HIGH.
+3. Procesar audio.
+4. Revisar salida_eq.wav generado por la aplicación.
 
-## Estructura del proyecto
+## Cómo Funciona Internamente
 
-```text
-.
-├── app.py
-├── dr_wav.h
-├── Ecualizador.asm
-├── Interfaz.c
-├── libecualizador.so
-└── Pruebas/
-    └── ... archivos originales de trabajo
-```
+1. app.py carga la biblioteca compartida con ctypes.
+2. Interfaz.c abre el WAV, prepara parámetros y llama a la rutina ASM.
+3. Ecualizador.asm aplica el procesamiento por bandas.
+4. Interfaz.c escribe el audio procesado en un nuevo archivo WAV.
 
-## Notas
+## Desarrollo En Carpeta Pruebas
 
-- La carpeta `Pruebas/` se mantiene intacta como área de desarrollo.
-- Los archivos de la raíz son copias listas para ejecución y empaquetado.
-- Si cambias el ensamblador o el archivo C, recompila `libecualizador.so`.
+La carpeta Pruebas se utiliza como entorno de trabajo y experimentación.
+
+- No es necesario modificarla para ejecutar desde la raíz.
+- Puedes sincronizar manualmente archivos entre raíz y Pruebas cuando lo necesites.
+
+## Solución De Problemas Rápida
+
+Si app.py no encuentra la librería:
+
+1. Verifica que exista libecualizador.so en la raíz.
+2. Recompila con los comandos de la sección Compilación.
+3. Ejecuta nuevamente python3 app.py.

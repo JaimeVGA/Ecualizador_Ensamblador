@@ -68,9 +68,9 @@ class EcualizadorApp(ctk.CTk):
         fuente_val = ctk.CTkFont(family="Consolas", size=13)
 
         # --- HEADER ---
-        self.lbl_titulo = ctk.CTkLabel(self, text="AUDIO ENGINE", font=fuente_header, text_color=COLOR_ACENTO)
+        self.lbl_titulo = ctk.CTkLabel(self, text="Ecualizador de Audio", font=fuente_header, text_color=COLOR_ACENTO)
         self.lbl_titulo.pack(pady=(40, 5))
-        self.lbl_tag = ctk.CTkLabel(self, text="X86_64 ASSEMBLY OPTIMIZED", font=ctk.CTkFont(size=10), text_color="#555555")
+        self.lbl_tag = ctk.CTkLabel(self, text="Ecualizar de audio basado en ASM", font=ctk.CTkFont(size=10), text_color="#555555")
         self.lbl_tag.pack(pady=(0, 25))
 
         # --- TARJETA DE ARCHIVO ---
@@ -96,9 +96,9 @@ class EcualizadorApp(ctk.CTk):
         self.lbl_eq_title.pack(pady=(15, 10))
 
         # Sliders
-        self.lbl_bajos, self.slider_bajos = self.crear_slider_group(self.card_eq, "LOW (100Hz)")
-        self.lbl_medios, self.slider_medios = self.crear_slider_group(self.card_eq, "MID (1kHz)")
-        self.lbl_agudos, self.slider_agudos = self.crear_slider_group(self.card_eq, "HIGH (5kHz)")
+        self.lbl_bajos, self.slider_bajos = self.crear_slider_group(self.card_eq, "Bajos (100Hz)")
+        self.lbl_medios, self.slider_medios = self.crear_slider_group(self.card_eq, "Medios (1kHz)")
+        self.lbl_agudos, self.slider_agudos = self.crear_slider_group(self.card_eq, "Altos (5kHz)")
 
         ctk.CTkLabel(self.card_eq, text="").pack(pady=5) # Espaciador
 
@@ -126,9 +126,9 @@ class EcualizadorApp(ctk.CTk):
         return lbl, slider
 
     def actualizar_textos(self, _=None):
-        self.lbl_bajos.configure(text=f"LOW (100Hz): {self.slider_bajos.get():+.1f} dB")
-        self.lbl_medios.configure(text=f"MID (1kHz): {self.slider_medios.get():+.1f} dB")
-        self.lbl_agudos.configure(text=f"HIGH (5kHz): {self.slider_agudos.get():+.1f} dB")
+        self.lbl_bajos.configure(text=f"Bajos (100Hz): {self.slider_bajos.get():+.1f} dB")
+        self.lbl_medios.configure(text=f"Medios (1kHz): {self.slider_medios.get():+.1f} dB")
+        self.lbl_agudos.configure(text=f"Altos (5kHz): {self.slider_agudos.get():+.1f} dB")
 
     def cargar_archivo(self):
         ruta = filedialog.askopenfilename(filetypes=[("Audio WAV", "*.wav")])
